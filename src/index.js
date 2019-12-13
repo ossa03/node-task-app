@@ -8,7 +8,13 @@ const PORT = process.env.PORT || 3000
 const userRouter = require('./routes/user')
 const taskRouter = require('./routes/task')
 
-//* middleware
+//* middleware (created by Original)
+// maintenance mode
+// app.use((req, res, next) => {
+// 	res.status(503).send('Site is currently down. Check back soon!  ')
+// })
+
+//* middleware (created by express)
 // postされたjsonを自動でオブジェクトに変換してくれる
 app.use(express.json())
 

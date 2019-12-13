@@ -47,9 +47,42 @@ const userSchema = new mongoose.Schema({
 			}
 		},
 	},
+	tokens: [
+		{
+			token: {
+				type: String,
+				required: true,
+			},
+		},
+	],
 })
 
-//* 静的関数 'Schema.statics' で original関数をsetできる
+//* 'Schema.methods.myFuncName'でインスタンスメソッドをsetできる.
+// userSchema.methods.getPublicProfile = function() {
+userSchema.methods.toJSON = function() {
+	const user = this
+	const userObject = user.toObject()
+	// ドキュメントには、マングースドキュメントをプレーンなJavaScriptオブジェクトに変換するtoObjectメソッドがある
+
+	delete userObject.password
+	delete userObject.tokens
+
+	return userObject
+}
+
+userSchema.methods.generateAuthToken = async function() {
+	// インスタンスであるthisを扱うためにallow functionは使わない.
+	const user = this
+
+	// user._idをtokenとして使用する ->token._idが生成される
+	const token = jwt.sign({ _id: user._id.toString() }, 'ossa')
+
+	user.tokens = user.tokens.concat({ token })
+	await user.save()
+
+	return token
+}
+//* 静的関数 'Schema.statics.myFuncName' で original関数をsetできる
 // emailとpasswordでuserを検索する関数
 userSchema.statics.findByCredentials = async (email, password) => {
 	const user = await User.findOne({ email })
@@ -67,7 +100,7 @@ userSchema.statics.findByCredentials = async (email, password) => {
 	return user
 }
 
-//* Save()する前に行こなう
+//* Save()する前に自動で行こなう
 userSchema.pre('save', async function(next) {
 	const user = this
 
