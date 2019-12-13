@@ -5,6 +5,7 @@ const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const Task = require('../models/task')
 
 //* model User 定義
 // schema
@@ -55,6 +56,13 @@ const userSchema = new mongoose.Schema({
 			},
 		},
 	],
+})
+
+//* リレーションシップ
+userSchema.virtual('tasks', {
+	ref: 'Task',
+	localField: '_id',
+	foreignField: 'owner',
 })
 
 //* 'Schema.methods.myFuncName'でインスタンスメソッドをsetできる.
@@ -109,6 +117,13 @@ userSchema.pre('save', async function(next) {
 		user.password = await bcrypt.hash(user.password, 8)
 	}
 
+	next()
+})
+
+//* userを削除するときにtaskも全部消す
+userSchema.pre('remove', async function(next) {
+	const user = this
+	await Task.deleteMany({ owner: user._id })
 	next()
 })
 

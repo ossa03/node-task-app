@@ -16,14 +16,12 @@ const taskSchema = new mongoose.Schema({
 		type: Boolean,
 		default: false,
 	},
+	owner: {
+		type: mongoose.Schema.Types.ObjectId,
+		required: true,
+		ref: 'User', //* アソシエーション設定. Userモデルを参照
+	},
 })
-
-// //* preSave
-// taskSchema.pre('save', async function(next) {
-// 	const task = this
-
-// 	if (task.isModified('')) next()
-// })
 
 const Task = mongoose.model(`Task`, taskSchema)
 
