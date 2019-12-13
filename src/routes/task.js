@@ -19,13 +19,35 @@ router.post(`/tasks`, auth, async (req, res) => {
 	}
 })
 
-//* Read tasks
+//* GET /tasks?completed=true
+//* GET /tasks?limit=10&skip=2
+//*sort GET /tasks?sortBy=createdAt:desc
 router.get('/tasks', auth, async (req, res) => {
+	const match = {} //初期化しておく
+	const sort = {} //初期化しておく
+
+	// queryStringに'completed'があって、それがStringの'true'だったらtrueをセットする(デフォルトはfalse)
+	if (req.query.completed) {
+		match.completed = req.query.completed === 'true'
+	}
+
+	if (req.query.sortBy) {
+		const parts = req.query.sortBy.split(':')
+		sort[parts[0]] = parts[1] === 'desc' ? -1 : 1
+	}
+
 	try {
-		// const tasks = await Task.find({ owner: req.user._id })
-		// res.send(tasks)
-		// or
-		await req.user.populate('tasks').execPopulate()
+		await req.user
+			.populate({
+				path: 'tasks',
+				match,
+				options: {
+					limit: parseInt(req.query.limit),
+					skip: parseInt(req.query.skip),
+					sort, //ex) createdAt:-1 or 1   -1は降順,1は昇順
+				},
+			})
+			.execPopulate()
 		res.send(req.user.tasks)
 	} catch (e) {
 		res.status(404).send()

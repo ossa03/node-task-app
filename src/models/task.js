@@ -6,22 +6,27 @@ const bcrypt = require('bcryptjs')
 
 //* model Task 定義
 // schema
-const taskSchema = new mongoose.Schema({
-	description: {
-		type: String,
-		required: true,
-		trim: true,
+const taskSchema = new mongoose.Schema(
+	{
+		description: {
+			type: String,
+			required: true,
+			trim: true,
+		},
+		completed: {
+			type: Boolean,
+			default: false,
+		},
+		owner: {
+			type: mongoose.Schema.Types.ObjectId,
+			required: true,
+			ref: 'User', //* アソシエーション設定. Userモデルを参照
+		},
 	},
-	completed: {
-		type: Boolean,
-		default: false,
+	{
+		timestamps: true,
 	},
-	owner: {
-		type: mongoose.Schema.Types.ObjectId,
-		required: true,
-		ref: 'User', //* アソシエーション設定. Userモデルを参照
-	},
-})
+)
 
 const Task = mongoose.model(`Task`, taskSchema)
 
